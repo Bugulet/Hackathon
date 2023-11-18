@@ -16,34 +16,34 @@ public class NetworkRequest : MonoBehaviour
     public Renderer zona7;
     public Renderer zona8;
     public Renderer zona9; // Reference to the Renderer component
-    public float minTemperature = 50f; // Minimum temperature value
-    public float maxTemperature = 100f; // Maximum temperature value
+
+    public float minTemperature = 0f; // Minimum temperature value
+    public float maxTemperature = 50f; // Maximum temperature value
+
+    public float minHumidity = 30f; // Minimum temperature value
+    public float maxHumidity = 100f; // Maximum temperature value
+
+    public float minEmission = 5f; // Minimum temperature value
+    public float maxEmission = 50f; // Maximum temperature value
 
 
-    void zone(Renderer zona)
+    enum state { temperatureState, humidityState, emissionState };
+    state currentState = state.temperatureState;
+
+
+    public void SetToTemperature()
     {
-        if (zona == null)
-        {
-            zona = GetComponent<Renderer>();
-            if (zona == null)
-            {
-                Debug.LogError("Renderer component not found or assigned.");
-                return;
-            }
-        }
-
-        // Example: Start with a default temperature value
-        float initialTemperature = 18f;
-        UpdateColor(initialTemperature, zona1);
-        UpdateColor(initialTemperature, zona2);
-        UpdateColor(initialTemperature, zona3);
-        UpdateColor(initialTemperature, zona4);
-        UpdateColor(initialTemperature, zona5);
-        UpdateColor(initialTemperature, zona6);
-        UpdateColor(initialTemperature, zona7);
-        UpdateColor(initialTemperature, zona8);
-        UpdateColor(initialTemperature, zona9);
+        currentState = state.temperatureState;
     }
+    public void SetToHumidity()
+    {
+        currentState=state.humidityState;
+    }
+    public void SetToEmission()
+    {
+        currentState = state.emissionState;
+    }
+
 
     void Start()
     {
@@ -91,18 +91,53 @@ public class NetworkRequest : MonoBehaviour
                     GameObject.Find("zona" + i).GetComponent<OnClicked>().Emission = myData.emission+i;
 
                 }
-
-                UpdateColor(t - 7, zona1);
-                UpdateColor(t + 3, zona2);
-                UpdateColor(t - 4, zona3);
-                UpdateColor(t - 7, zona4);
-                UpdateColor(t - 1, zona5);
-                UpdateColor(t + 3, zona6);
-                UpdateColor(t, zona7);
-                UpdateColor(t - 2, zona8);
-                UpdateColor(t - 7, zona9);
+                switch (currentState)
+                {
+                    case state.temperatureState:
+                        UpdateColor(t - 7, zona1);
+                        UpdateColor(t + 3, zona2);
+                        UpdateColor(t - 4, zona3);
+                        UpdateColor(t - 7, zona4);
+                        UpdateColor(t - 1, zona5);
+                        UpdateColor(t + 3, zona6);
+                        UpdateColor(t, zona7);
+                        UpdateColor(t - 2, zona8);
+                        UpdateColor(t - 7, zona9);
+                        break;
+                    case state.humidityState:
+                        UpdateColor(h - 7, zona1);
+                        UpdateColor(h + 3, zona2);
+                        UpdateColor(h - 4, zona3);
+                        UpdateColor(h - 7, zona4);
+                        UpdateColor(h - 1, zona5);
+                        UpdateColor(h + 3, zona6);
+                        UpdateColor(h, zona7);
+                        UpdateColor(h - 2, zona8);
+                        UpdateColor(h - 7, zona9);
+                        break;
+                    case state.emissionState:
+                        UpdateColor(myData.emission - 7, zona1);
+                        UpdateColor(myData.emission + 3, zona2);
+                        UpdateColor(myData.emission - 4, zona3);
+                        UpdateColor(myData.emission - 7, zona4);
+                        UpdateColor(myData.emission - 1, zona5);
+                        UpdateColor(myData.emission + 3, zona6);
+                        UpdateColor(myData.emission, zona7);
+                        UpdateColor(myData.emission - 2, zona8);
+                        UpdateColor(myData.emission - 7, zona9);
+                        break;
+                    default:
+                        break;
+                }
+                print(currentState);
             }
+            
         }
+    }
+
+    private void ChangeColor()
+    {
+
     }
 
     // Define a data class to represent the structure of your JSON data
@@ -118,15 +153,30 @@ public class NetworkRequest : MonoBehaviour
         public int __v;
     }
 
-    void UpdateColor(float temperature, Renderer zona)
+    void UpdateColor(float value, Renderer zona)
     {
         // Normalize temperature to a range between 0 and 1
-        float normalizedTemperature = Mathf.InverseLerp(minTemperature, maxTemperature, temperature);
+        float normalizedValue = 0;
+        switch (currentState)
+        {
+            case state.temperatureState:
+                normalizedValue=Mathf.InverseLerp(minTemperature, maxTemperature, value);
+                break;
+            case state.humidityState:
+                normalizedValue=Mathf.InverseLerp(minHumidity, maxHumidity, value);
+                break;
+            case state.emissionState:
+                normalizedValue= Mathf.InverseLerp(minEmission, maxEmission, value);
+                break;
+            default:
+                break;
+        }
+        
         // GetComponent<Material>().
         // Interpolate between two colors based on the normalized temperature
         Color startColor = Color.blue; // Cold color
         Color endColor = Color.red;   // Hot color
-        Color lerpedColor = Color.Lerp(startColor, endColor, normalizedTemperature);
+        Color lerpedColor = Color.Lerp(startColor, endColor, normalizedValue);
         lerpedColor.a = 0.5f;
         // Apply the color to the Renderer component
         zona.material.color = lerpedColor;

@@ -11,7 +11,7 @@ public class OnClicked : MonoBehaviour
 
     private void OnMouseOver()
     {
-        FindObjectOfType<SensorDataText>().GetComponent<TextMeshProUGUI>().text = $"T:{Temperature}\nH:{Humidity}\nE:{Emission}";
+        FindObjectOfType<SensorDataText>().GetComponent<TextMeshProUGUI>().text = $"{gameObject.name}\nTemp:{Temperature}°C\nH:{Humidity}%\nE:{Emission}PPM";
     }
     // Start is called before the first frame update
     void Start()
